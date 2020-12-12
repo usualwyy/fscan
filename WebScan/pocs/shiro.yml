@@ -1,0 +1,12 @@
+name: poc-yaml-shiro
+rules:
+  - method: GET
+    path: /
+    headers:
+      Cookie: rememberMe=1
+    expression: |
+      response.headers["Set-Cookie"] != ""
+detail:
+  author: jinqi
+  links:
+    - https://baidu.com/shiro

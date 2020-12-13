@@ -5,8 +5,8 @@ rules:
     headers:
       Cookie: rememberMe=1
     expression: |
-      response.headers["Set-Cookie"] != ""
+      "Set-Cookie" in response.headers && response.headers["Set-Cookie"].contains("rememberMe")
 detail:
-  author: jinqi
+  author: test
   links:
     - https://baidu.com/shiro

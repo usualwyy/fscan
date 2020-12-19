@@ -6,24 +6,21 @@ import (
 	"github.com/shadow1ng/fscan/common"
 	"github.com/stacktitan/smb/smb"
 	"strings"
-	"sync"
 	"time"
 )
 
-func SmbScan(info *common.HostInfo, ch chan int, wg *sync.WaitGroup) {
+func SmbScan(info *common.HostInfo) {
 
 Loop:
 	for _, user := range common.Userdict["smb"] {
 		for _, pass := range common.Passwords {
-			pass = strings.Replace(pass, "{user}", string(user), -1)
+			pass = strings.Replace(pass, "{user}", user, -1)
 			flag, err := doWithTimeOut(info, user, pass)
 			if flag == true && err == nil {
 				break Loop
 			}
 		}
 	}
-	wg.Done()
-	<-ch
 
 }
 

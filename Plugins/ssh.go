@@ -6,11 +6,10 @@ import (
 	"golang.org/x/crypto/ssh"
 	"net"
 	"strings"
-	"sync"
 	"time"
 )
 
-func SshScan(info *common.HostInfo, ch chan int, wg *sync.WaitGroup) {
+func SshScan(info *common.HostInfo) {
 Loop:
 	for _, user := range common.Userdict["ssh"] {
 		for _, pass := range common.Passwords {
@@ -21,8 +20,6 @@ Loop:
 			}
 		}
 	}
-	wg.Done()
-	<-ch
 }
 
 func SshConn(info *common.HostInfo, user string, pass string) (flag bool, err error) {

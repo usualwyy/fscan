@@ -3,15 +3,13 @@ package Plugins
 import (
 	"database/sql"
 	"fmt"
-	"strings"
-	"sync"
-	"time"
-
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/shadow1ng/fscan/common"
+	"strings"
+	"time"
 )
 
-func MysqlScan(info *common.HostInfo, ch chan int, wg *sync.WaitGroup) {
+func MysqlScan(info *common.HostInfo) {
 Loop:
 	for _, user := range common.Userdict["mysql"] {
 		for _, pass := range common.Passwords {
@@ -22,8 +20,6 @@ Loop:
 			}
 		}
 	}
-	wg.Done()
-	<-ch
 }
 
 func MysqlConn(info *common.HostInfo, user string, pass string) (flag bool, err error) {

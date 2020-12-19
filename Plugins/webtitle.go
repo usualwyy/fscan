@@ -8,25 +8,31 @@ import (
 	"io/ioutil"
 	"net/http"
 	"regexp"
-	"sync"
+	"strings"
 	"time"
 )
 
-func WebTitle(info *common.HostInfo, ch chan int, wg *sync.WaitGroup) (err error, result string) {
-	info.Url = fmt.Sprintf("http://%s:%s", info.Host, info.Ports)
-	err, result = geturl(info)
-	if err == nil && info.IsWebCan == false {
-		WebScan.WebScan(info)
+func WebTitle(info *common.HostInfo) (err error, result string) {
+	if info.Ports == "80" {
+		info.Url = fmt.Sprintf("http://%s", info.Host)
+	} else {
+		info.Url = fmt.Sprintf("http://%s:%s", info.Host, info.Ports)
 	}
 
-	info.Url = fmt.Sprintf("https://%s:%s", info.Host, info.Ports)
 	err, result = geturl(info)
-	if err == nil && info.IsWebCan == false {
-		WebScan.WebScan(info)
+	if info.IsWebCan {
+		return
 	}
-
-	wg.Done()
-	<-ch
+	if err == nil {
+		if result == "https" {
+			err, result = geturl(info)
+			if err == nil {
+				WebScan.WebScan(info)
+			}
+		} else {
+			WebScan.WebScan(info)
+		}
+	}
 	return err, result
 }
 
@@ -60,6 +66,10 @@ func geturl(info *common.HostInfo) (err error, result string) {
 			}
 			result = fmt.Sprintf("WebTitle:%-25v %-3v %v", url, resp.StatusCode, title)
 			common.LogSuccess(result)
+			if resp.StatusCode == 400 && info.Url[:5] != "https" {
+				info.Url = strings.Replace(info.Url, "http://", "https://", 1)
+				return err, "https"
+			}
 			return err, result
 		}
 		return err, ""

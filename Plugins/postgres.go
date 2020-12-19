@@ -3,15 +3,13 @@ package Plugins
 import (
 	"database/sql"
 	"fmt"
-	"strings"
-	"sync"
-	"time"
-
 	_ "github.com/lib/pq"
 	"github.com/shadow1ng/fscan/common"
+	"strings"
+	"time"
 )
 
-func PostgresScan(info *common.HostInfo, ch chan int, wg *sync.WaitGroup) {
+func PostgresScan(info *common.HostInfo) {
 Loop:
 	for _, user := range common.Userdict["postgresql"] {
 		for _, pass := range common.Passwords {
@@ -22,8 +20,6 @@ Loop:
 			}
 		}
 	}
-	wg.Done()
-	<-ch
 }
 
 func PostgresConn(info *common.HostInfo, user string, pass string) (flag bool, err error) {

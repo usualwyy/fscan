@@ -30,9 +30,10 @@ var PORTList = map[string]int{
 	"elastic":     9200,
 	"findnet":     135,
 	"all":         0,
+	"portscan":    0,
 }
 
-var PORTList_bak = map[string]int{
+var PortlistBack = map[string]int{
 	"ftp":         21,
 	"ssh":         22,
 	"mem":         11211,
@@ -48,12 +49,13 @@ var PORTList_bak = map[string]int{
 	"elastic":     9200,
 	"findnet":     135,
 	"all":         0,
+	"portscan":    0,
 }
 
 var Outputfile = "result.txt"
 var IsSave = true
 
-var DefaultPorts = "21,22,80,81,135,443,445,1433,1521,3306,5432,6379,7001,8000,8080,8089,9200,11211,27017"
+var DefaultPorts = "21,22,80,81,135,443,445,1433,3306,5432,6379,7001,8000,8080,8089,9200,11211,27017"
 
 type HostInfo struct {
 	Host        string

@@ -6,16 +6,13 @@ import (
 	"net"
 	"net/http"
 	"strings"
-	"sync"
 	"time"
 
 	"github.com/shadow1ng/fscan/common"
 )
 
-func elasticsearchScan(info *common.HostInfo, ch chan int, wg *sync.WaitGroup) {
+func elasticsearchScan(info *common.HostInfo) {
 	geturl2(info)
-	wg.Done()
-	<-ch
 }
 
 func geturl2(info *common.HostInfo) (flag bool, err error) {

@@ -2,16 +2,12 @@ package Plugins
 
 import (
 	"bytes"
+	"encoding/hex"
+	"fmt"
+	"github.com/shadow1ng/fscan/common"
 	"net"
 	"strings"
 	"time"
-
-	//"encoding/binary"
-	"encoding/hex"
-	"fmt"
-	"sync"
-
-	"github.com/shadow1ng/fscan/common"
 )
 
 var (
@@ -20,10 +16,8 @@ var (
 	buffer_v3, _ = hex.DecodeString("0900ffff0000")
 )
 
-func Findnet(info *common.HostInfo, ch chan int, wg *sync.WaitGroup) {
+func Findnet(info *common.HostInfo) {
 	FindnetScan(info)
-	wg.Done()
-	<-ch
 }
 
 func FindnetScan(info *common.HostInfo) {

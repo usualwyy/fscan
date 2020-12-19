@@ -55,11 +55,11 @@ func ParseIPs(ip string) (hosts []string, err error) {
 func ParseIPone(ip string) ([]string, error) {
 	reg := regexp.MustCompile(`[a-zA-Z]+`)
 	switch {
-	case strings.Contains(ip[len(ip)-3:len(ip)], "/24"):
+	case strings.Contains(ip[len(ip)-3:], "/24"):
 		return ParseIPA(ip)
-	case strings.Contains(ip[len(ip)-3:len(ip)], "/16"):
+	case strings.Contains(ip[len(ip)-3:], "/16"):
 		return ParseIPD(ip)
-	case strings.Contains(ip[len(ip)-2:len(ip)], "/8"):
+	case strings.Contains(ip[len(ip)-2:], "/8"):
 		return ParseIPE(ip)
 	case strings.Count(ip, "-") == 1:
 		return ParseIPC(ip)
@@ -92,19 +92,6 @@ func ParseIPA(ip string) ([]string, error) {
 		AllIP = append(AllIP, IPrange+"."+strconv.Itoa(i))
 	}
 	return AllIP, nil
-}
-
-//Resolving multiple IPS, for example: 192.168.111.1,192.168.111.2
-func ParseIPB(ip string) ([]string, error) {
-	IPList := strings.Split(ip, ",")
-	for _, i := range IPList {
-		testIP := net.ParseIP(i)
-		if testIP == nil {
-			return nil, ParseIPErr
-		}
-	}
-	return IPList, nil
-
 }
 
 //Resolving a range of IP,for example: 192.168.111.1-255,192.168.111.1-192.168.112.255
@@ -143,11 +130,11 @@ func ParseIPC(ip string) ([]string, error) {
 			}
 			start[i], end[i] = ip1, ip2
 		}
-		startNum := (start[0]<<24 | start[1]<<16 | start[2]<<8 | start[3])
-		endNum := (end[0]<<24 | end[1]<<16 | end[2]<<8 | end[3])
+		startNum := start[0]<<24 | start[1]<<16 | start[2]<<8 | start[3]
+		endNum := end[0]<<24 | end[1]<<16 | end[2]<<8 | end[3]
 		fmt.Println(startNum, endNum)
 		for num := startNum; num < endNum; num++ {
-			ip := (strconv.Itoa((num>>24)&0xff) + "." + strconv.Itoa((num>>16)&0xff) + "." + strconv.Itoa((num>>8)&0xff) + "." + strconv.Itoa((num)&0xff))
+			ip := strconv.Itoa((num>>24)&0xff) + "." + strconv.Itoa((num>>16)&0xff) + "." + strconv.Itoa((num>>8)&0xff) + "." + strconv.Itoa((num)&0xff)
 			AllIP = append(AllIP, ip)
 		}
 	}

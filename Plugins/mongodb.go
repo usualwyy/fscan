@@ -2,19 +2,15 @@ package Plugins
 
 import (
 	"fmt"
-	"net"
-	"strings"
-	"sync"
-	"time"
-
 	_ "github.com/denisenkom/go-mssqldb"
 	"github.com/shadow1ng/fscan/common"
+	"net"
+	"strings"
+	"time"
 )
 
-func MongodbScan(info *common.HostInfo, ch chan int, wg *sync.WaitGroup) {
+func MongodbScan(info *common.HostInfo) {
 	MongodbUnauth(info)
-	wg.Done()
-	<-ch
 }
 
 func MongodbUnauth(info *common.HostInfo) (flag bool, err error) {

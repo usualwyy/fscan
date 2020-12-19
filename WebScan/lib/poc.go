@@ -2,6 +2,7 @@ package lib
 
 import (
 	"embed"
+	"fmt"
 	"gopkg.in/yaml.v3"
 	"strings"
 )
@@ -30,20 +31,19 @@ type Detail struct {
 	Version     string   `yaml:"version"`
 }
 
-
-func LoadMultiPoc(Pocs embed.FS,pocname string) []*Poc {
+func LoadMultiPoc(Pocs embed.FS, pocname string) []*Poc {
 	var pocs []*Poc
-	for _, f := range SelectPoc(Pocs,pocname) {
-		if p, err := loadPoc(f,Pocs); err == nil {
+	for _, f := range SelectPoc(Pocs, pocname) {
+		if p, err := loadPoc(f, Pocs); err == nil {
 			pocs = append(pocs, p)
 		}
 	}
 	return pocs
 }
 
-func loadPoc(fileName string,Pocs embed.FS) (*Poc, error) {
+func loadPoc(fileName string, Pocs embed.FS) (*Poc, error) {
 	p := &Poc{}
-	yamlFile, err := Pocs.ReadFile("pocs/"+fileName)
+	yamlFile, err := Pocs.ReadFile("pocs/" + fileName)
 
 	if err != nil {
 		return nil, err
@@ -55,19 +55,16 @@ func loadPoc(fileName string,Pocs embed.FS) (*Poc, error) {
 	return p, err
 }
 
-func SelectPoc(Pocs embed.FS,pocname string) []string {
+func SelectPoc(Pocs embed.FS, pocname string) []string {
 	entries, err := Pocs.ReadDir("pocs")
 	if err != nil {
-		panic(err)
+		fmt.Println(err)
 	}
 	var foundFiles []string
 	for _, entry := range entries {
-		if strings.Contains(entry.Name(), pocname){
+		if strings.Contains(entry.Name(), pocname) {
 			foundFiles = append(foundFiles, entry.Name())
 		}
 	}
 	return foundFiles
 }
-
-
-

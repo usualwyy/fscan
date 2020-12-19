@@ -55,10 +55,10 @@ func geturl(info *common.HostInfo) (err error, result string) {
 			} else {
 				title = "None"
 			}
-			if len(title) > 50 {
-				title = title[:50]
+			if len(title) > 100 {
+				title = title[:100]
 			}
-			result = fmt.Sprintf("WebTitle:%v %v %v", url, resp.StatusCode, title)
+			result = fmt.Sprintf("WebTitle:%-25v %-3v %v", url, resp.StatusCode, title)
 			common.LogSuccess(result)
 			return err, result
 		}

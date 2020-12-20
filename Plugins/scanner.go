@@ -17,7 +17,7 @@ func Scan(info common.HostInfo) {
 		Hosts = ICMPRun(Hosts, info.IcmpThreads, info.Ping)
 		fmt.Println("icmp alive hosts len is:", len(Hosts))
 	}
-	AlivePorts := TCPportScan(Hosts, info.Ports, info.Timeout) //return AliveHosts,AlivePorts
+	AlivePorts := TCPportScan(Hosts, info.Ports, info.Timeout)
 	if info.Scantype == "portscan" {
 		return
 	}

@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"github.com/shadow1ng/fscan/Plugins"
 	"github.com/shadow1ng/fscan/common"
 )
@@ -11,5 +10,5 @@ func main() {
 	common.Flag(&Info)
 	common.Parse(&Info)
 	Plugins.Scan(Info)
-	fmt.Println("scan end")
+	print("scan end\n")
 }

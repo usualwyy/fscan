@@ -1,6 +1,5 @@
 package common
 
-//fscan version 1.3
 var Userdict = map[string][]string{
 	"ftp":        {"www", "admin", "root", "db", "wwwroot", "data", "web", "ftp"},
 	"mysql":      {"root"},
@@ -9,7 +8,6 @@ var Userdict = map[string][]string{
 	"postgresql": {"postgres", "admin"},
 	"ssh":        {"root", "admin"},
 	"mongodb":    {"root", "admin"},
-	//"telnet": []string{"administrator","admin","root","cisco","huawei","zte"},
 }
 
 var Passwords = []string{"admin123A", "admin123", "123456", "admin", "root", "password", "123123", "654321", "123", "1", "admin@123", "Admin@123", "{user}", "{user}123", "", "P@ssw0rd!", "qwa123", "12345678", "test", "123qwe!@#", "123456789", "123321", "666666", "fuckyou", "000000", "1234567890", "8888888", "qwerty", "1qaz2wsx", "abc123", "abc123456", "1qaz@WSX", "Aa123456", "sysadmin", "system", "huawei"}

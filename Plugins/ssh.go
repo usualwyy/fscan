@@ -10,13 +10,12 @@ import (
 )
 
 func SshScan(info *common.HostInfo) {
-Loop:
 	for _, user := range common.Userdict["ssh"] {
 		for _, pass := range common.Passwords {
 			pass = strings.Replace(pass, "{user}", user, -1)
 			flag, err := SshConn(info, user, pass)
 			if flag == true && err == nil {
-				break Loop
+				return
 			}
 		}
 	}

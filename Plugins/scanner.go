@@ -25,7 +25,7 @@ func Scan(info common.HostInfo) {
 	for _, port := range common.PORTList {
 		severports = append(severports, strconv.Itoa(port))
 	}
-	var ch = make(chan int, info.Threads)
+	var ch = make(chan struct{}, info.Threads)
 	var wg = sync.WaitGroup{}
 	for _, targetIP := range AlivePorts {
 		info.Host, info.Ports = strings.Split(targetIP, ":")[0], strings.Split(targetIP, ":")[1]
@@ -49,14 +49,14 @@ func Scan(info common.HostInfo) {
 	common.WaitSave()
 }
 
-func AddScan(scantype string, info common.HostInfo, ch chan int, wg *sync.WaitGroup) {
+func AddScan(scantype string, info common.HostInfo, ch chan struct{}, wg *sync.WaitGroup) {
 	wg.Add(1)
 	go func() {
 		ScanFunc(PluginList, scantype, &info)
 		wg.Done()
 		<-ch
 	}()
-	ch <- 1
+	ch <- struct{}{}
 }
 
 func ScanFunc(m map[string]interface{}, name string, infos ...interface{}) (result []reflect.Value, err error) {

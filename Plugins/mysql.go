@@ -10,13 +10,12 @@ import (
 )
 
 func MysqlScan(info *common.HostInfo) {
-Loop:
 	for _, user := range common.Userdict["mysql"] {
 		for _, pass := range common.Passwords {
 			pass = strings.Replace(pass, "{user}", user, -1)
 			flag, err := MysqlConn(info, user, pass)
 			if flag == true && err == nil {
-				break Loop
+				return
 			}
 		}
 	}
@@ -29,6 +28,8 @@ func MysqlConn(info *common.HostInfo, user string, pass string) (flag bool, err 
 	db, err := sql.Open("mysql", dataSourceName)
 	if err == nil {
 		db.SetConnMaxLifetime(time.Duration(info.Timeout) * time.Second)
+		db.SetConnMaxIdleTime(time.Duration(info.Timeout) * time.Second)
+		db.SetMaxIdleConns(0)
 		defer db.Close()
 		err = db.Ping()
 		if err == nil {

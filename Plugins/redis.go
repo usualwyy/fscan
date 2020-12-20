@@ -15,13 +15,11 @@ func RedisScan(info *common.HostInfo) {
 	if flag == true && err == nil {
 		return
 	}
-
-Loop:
 	for _, pass := range common.Passwords {
 		pass = strings.Replace(pass, "{user}", string("redis"), -1)
 		flag, err := RedisConn(info, pass)
 		if flag == true && err == nil {
-			break Loop
+			return
 		}
 	}
 }

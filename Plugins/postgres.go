@@ -10,13 +10,12 @@ import (
 )
 
 func PostgresScan(info *common.HostInfo) {
-Loop:
 	for _, user := range common.Userdict["postgresql"] {
 		for _, pass := range common.Passwords {
 			pass = strings.Replace(pass, "{user}", string(user), -1)
 			flag, err := PostgresConn(info, user, pass)
 			if flag == true && err == nil {
-				break Loop
+				return
 			}
 		}
 	}

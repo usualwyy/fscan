@@ -6,6 +6,7 @@ import (
 	"github.com/shadow1ng/fscan/WebScan"
 	"github.com/shadow1ng/fscan/common"
 	"io/ioutil"
+	"net"
 	"net/http"
 	"regexp"
 	"strings"
@@ -42,6 +43,9 @@ func geturl(info *common.HostInfo) (err error, result string) {
 	tr := &http.Transport{
 		TLSClientConfig:   &tls.Config{InsecureSkipVerify: true},
 		DisableKeepAlives: false,
+		DialContext: (&net.Dialer{
+			Timeout: time.Duration(info.WebTimeout) * time.Second,
+		}).DialContext,
 	}
 	var client = &http.Client{Timeout: time.Duration(info.WebTimeout) * time.Second, Transport: tr}
 	res, err := http.NewRequest("GET", url, nil)

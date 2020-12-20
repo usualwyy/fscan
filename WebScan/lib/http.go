@@ -34,6 +34,7 @@ func InitHttpClient(ThreadsNum int, DownProxy string, Timeout time.Duration) err
 		IdleConnTimeout:     keepAlive,
 		TLSClientConfig:     &tls.Config{InsecureSkipVerify: true},
 		TLSHandshakeTimeout: 5 * time.Second,
+		DisableKeepAlives:   false,
 	}
 	if DownProxy != "" {
 		u, err := url.Parse(DownProxy)
@@ -161,7 +162,7 @@ func getRespBody(oResp *http.Response) ([]byte, error) {
 			//utils.Logger.Error(err)
 			return nil, err
 		}
-		//defer oResp.Body.Close()
+		defer oResp.Body.Close()
 		body = raw
 	}
 	return body, nil

@@ -27,6 +27,9 @@ func MysqlConn(info *common.HostInfo, user string, pass string) (flag bool, err 
 	Host, Port, Username, Password := info.Host, common.PORTList["mysql"], user, pass
 	dataSourceName := fmt.Sprintf("%v:%v@tcp(%v:%v)/%v?charset=utf8", Username, Password, Host, Port, "mysql")
 	db, err := sql.Open("mysql", dataSourceName)
+	if err != nil {
+		return flag, err
+	}
 	db.SetConnMaxLifetime(time.Duration(info.Timeout) * time.Second)
 	if err == nil {
 		defer db.Close()

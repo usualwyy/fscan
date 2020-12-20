@@ -17,7 +17,7 @@ func Scan(info common.HostInfo) {
 		Hosts = ICMPRun(Hosts, info.IcmpThreads, info.Ping)
 		fmt.Println("icmp alive hosts len is:", len(Hosts))
 	}
-	_, AlivePorts := TCPportScan(Hosts, info.Ports, 3) //return AliveHosts,AlivePorts
+	AlivePorts := TCPportScan(Hosts, info.Ports, info.Timeout) //return AliveHosts,AlivePorts
 	if info.Scantype == "portscan" {
 		return
 	}
@@ -46,6 +46,7 @@ func Scan(info common.HostInfo) {
 		}
 	}
 	wg.Wait()
+	common.WaitSave()
 }
 
 func AddScan(scantype string, info common.HostInfo, ch chan int, wg *sync.WaitGroup) {
@@ -61,7 +62,7 @@ func AddScan(scantype string, info common.HostInfo, ch chan int, wg *sync.WaitGr
 func ScanFunc(m map[string]interface{}, name string, infos ...interface{}) (result []reflect.Value, err error) {
 	f := reflect.ValueOf(m[name])
 	if len(infos) != f.Type().NumIn() {
-		err = errors.New("The number of infos is not adapted")
+		err = errors.New("The number of infos is not adapted ")
 		fmt.Println(err.Error())
 		return result, nil
 	}

@@ -15,23 +15,24 @@ import (
 func WebTitle(info *common.HostInfo) (err error, result string) {
 	if info.Ports == "80" {
 		info.Url = fmt.Sprintf("http://%s", info.Host)
+	} else if info.Ports == "443" {
+		info.Url = fmt.Sprintf("https://%s", info.Host)
 	} else {
 		info.Url = fmt.Sprintf("http://%s:%s", info.Host, info.Ports)
 	}
 
 	err, result = geturl(info)
-	if info.IsWebCan {
+	if info.IsWebCan || err != nil {
 		return
 	}
-	if err == nil {
-		if result == "https" {
-			err, result = geturl(info)
-			if err == nil {
-				WebScan.WebScan(info)
-			}
-		} else {
+
+	if result == "https" {
+		err, result = geturl(info)
+		if err == nil {
 			WebScan.WebScan(info)
 		}
+	} else {
+		WebScan.WebScan(info)
 	}
 	return err, result
 }
@@ -39,7 +40,8 @@ func WebTitle(info *common.HostInfo) (err error, result string) {
 func geturl(info *common.HostInfo) (err error, result string) {
 	url := info.Url
 	tr := &http.Transport{
-		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+		TLSClientConfig:   &tls.Config{InsecureSkipVerify: true},
+		DisableKeepAlives: false,
 	}
 	var client = &http.Client{Timeout: time.Duration(info.WebTimeout) * time.Second, Transport: tr}
 	res, err := http.NewRequest("GET", url, nil)
@@ -58,11 +60,11 @@ func geturl(info *common.HostInfo) (err error, result string) {
 			find := re.FindAllStringSubmatch(string(body), -1)
 			if len(find) > 0 {
 				title = find[0][1]
+				if len(title) > 100 {
+					title = title[:100]
+				}
 			} else {
 				title = "None"
-			}
-			if len(title) > 100 {
-				title = title[:100]
 			}
 			result = fmt.Sprintf("WebTitle:%-25v %-3v %v", url, resp.StatusCode, title)
 			common.LogSuccess(result)

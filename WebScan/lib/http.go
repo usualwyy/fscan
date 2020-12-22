@@ -74,12 +74,10 @@ func DoRequest(req *http.Request, redirect bool) (*Response, error) {
 	} else {
 		oResp, err = clientNoRedirect.Do(req)
 	}
-	if oResp != nil {
-		defer oResp.Body.Close()
-	}
 	if err != nil {
 		return nil, err
 	}
+	defer oResp.Body.Close()
 	resp, err := ParseResponse(oResp)
 	if err != nil {
 		return nil, err
@@ -142,7 +140,11 @@ func ParseResponse(oResp *http.Response) (*Response, error) {
 func getRespBody(oResp *http.Response) ([]byte, error) {
 	var body []byte
 	if oResp.Header.Get("Content-Encoding") == "gzip" {
-		gr, _ := gzip.NewReader(oResp.Body)
+		gr, err := gzip.NewReader(oResp.Body)
+		if err != nil {
+			return nil, err
+		}
+
 		defer gr.Close()
 		for {
 			buf := make([]byte, 1024)

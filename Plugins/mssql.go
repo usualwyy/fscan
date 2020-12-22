@@ -9,16 +9,19 @@ import (
 	"time"
 )
 
-func MssqlScan(info *common.HostInfo) {
+func MssqlScan(info *common.HostInfo) (tmperr error) {
 	for _, user := range common.Userdict["mssql"] {
 		for _, pass := range common.Passwords {
 			pass = strings.Replace(pass, "{user}", user, -1)
 			flag, err := MssqlConn(info, user, pass)
 			if flag == true && err == nil {
-				return
+				return err
+			} else {
+				tmperr = err
 			}
 		}
 	}
+	return tmperr
 }
 
 func MssqlConn(info *common.HostInfo, user string, pass string) (flag bool, err error) {

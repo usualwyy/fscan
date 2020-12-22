@@ -80,6 +80,7 @@ type HostInfo struct {
 	RedisFile   string
 	RedisShell  string
 	IsWebCan    bool
+	Debug       bool
 	PocInfo     PocInfo
 }
 

@@ -8,16 +8,19 @@ import (
 	"time"
 )
 
-func SmbScan(info *common.HostInfo) {
+func SmbScan(info *common.HostInfo) (tmperr error) {
 	for _, user := range common.Userdict["smb"] {
 		for _, pass := range common.Passwords {
 			pass = strings.Replace(pass, "{user}", user, -1)
 			flag, err := doWithTimeOut(info, user, pass)
 			if flag == true && err == nil {
-				return
+				return err
+			} else {
+				tmperr = err
 			}
 		}
 	}
+	return tmperr
 }
 
 func SmblConn(info *common.HostInfo, user string, pass string, Domain string, signal chan struct{}) (flag bool, err error) {

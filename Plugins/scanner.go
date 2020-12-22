@@ -52,7 +52,15 @@ func Scan(info common.HostInfo) {
 func AddScan(scantype string, info common.HostInfo, ch chan struct{}, wg *sync.WaitGroup) {
 	wg.Add(1)
 	go func() {
-		ScanFunc(PluginList, scantype, &info)
+		err, _ := ScanFunc(PluginList, scantype, &info)
+		if info.Debug == false {
+			tmperr := err[0].Interface()
+			if tmperr != nil {
+				tmperr1 := err[0].Interface().(error)
+				errtext := strings.Replace(tmperr1.Error(), "\n", "", -1)
+				fmt.Println(info.Host+":"+info.Ports, errtext)
+			}
+		}
 		wg.Done()
 		<-ch
 	}()

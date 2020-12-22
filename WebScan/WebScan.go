@@ -2,6 +2,7 @@ package WebScan
 
 import (
 	"embed"
+	"fmt"
 	"github.com/shadow1ng/fscan/WebScan/lib"
 	"github.com/shadow1ng/fscan/common"
 	"net/http"
@@ -13,7 +14,10 @@ var Pocs embed.FS
 
 func WebScan(info *common.HostInfo) {
 	info.PocInfo.Target = info.Url
-	Execute(info.PocInfo)
+	err := Execute(info.PocInfo)
+	if err != nil {
+		fmt.Println(info.Url, err)
+	}
 }
 
 func Execute(PocInfo common.PocInfo) error {

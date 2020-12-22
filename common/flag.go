@@ -11,7 +11,7 @@ func Banner() {
  / /_\/____/ __|/ __| '__/ _` + "`" + ` |/ __| |/ /
 / /_\\_____\__ \ (__| | | (_| | (__|   <    
 \____/     |___/\___|_|  \__,_|\___|_|\_\   
-                     fscan version: 1.4.1
+                     fscan version: 1.4.2
 `
 	print(banner)
 }
@@ -34,6 +34,7 @@ func Flag(Info *HostInfo) {
 	flag.StringVar(&Info.Passfile, "pwdf", "", "password file")
 	flag.StringVar(&Info.Outputfile, "o", "result.txt", "Outputfile")
 	flag.Int64Var(&Info.Timeout, "time", 3, "Set timeout")
+	flag.BoolVar(&Info.Debug, "debug", false, "debug mode will print more error info")
 	flag.Int64Var(&Info.WebTimeout, "wt", 3, "Set web timeout")
 	flag.StringVar(&Info.Scantype, "m", "all", "Select scan type ,as: -m ssh")
 	flag.StringVar(&Info.RedisFile, "rf", "", "redis file to write sshkey file (as: -rf id_rsa.pub) ")

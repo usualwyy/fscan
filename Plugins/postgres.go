@@ -9,16 +9,19 @@ import (
 	"time"
 )
 
-func PostgresScan(info *common.HostInfo) {
+func PostgresScan(info *common.HostInfo) (tmperr error) {
 	for _, user := range common.Userdict["postgresql"] {
 		for _, pass := range common.Passwords {
 			pass = strings.Replace(pass, "{user}", string(user), -1)
 			flag, err := PostgresConn(info, user, pass)
 			if flag == true && err == nil {
-				return
+				return err
+			} else {
+				tmperr = err
 			}
 		}
 	}
+	return tmperr
 }
 
 func PostgresConn(info *common.HostInfo, user string, pass string) (flag bool, err error) {

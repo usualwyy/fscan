@@ -8,16 +8,19 @@ import (
 	"time"
 )
 
-func FtpScan(info *common.HostInfo) {
+func FtpScan(info *common.HostInfo) (tmperr error) {
 	for _, user := range common.Userdict["ftp"] {
 		for _, pass := range common.Passwords {
-			pass = strings.Replace(pass, "{user}", string(user), -1)
+			pass = strings.Replace(pass, "{user}", user, -1)
 			flag, err := FtpConn(info, user, pass)
 			if flag == true && err == nil {
-				return
+				return err
+			} else {
+				tmperr = err
 			}
 		}
 	}
+	return tmperr
 }
 
 func FtpConn(info *common.HostInfo, user string, pass string) (flag bool, err error) {

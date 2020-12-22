@@ -9,16 +9,19 @@ import (
 	"time"
 )
 
-func SshScan(info *common.HostInfo) {
+func SshScan(info *common.HostInfo) (tmperr error) {
 	for _, user := range common.Userdict["ssh"] {
 		for _, pass := range common.Passwords {
 			pass = strings.Replace(pass, "{user}", user, -1)
 			flag, err := SshConn(info, user, pass)
 			if flag == true && err == nil {
-				return
+				return err
+			} else {
+				tmperr = err
 			}
 		}
 	}
+	return tmperr
 }
 
 func SshConn(info *common.HostInfo, user string, pass string) (flag bool, err error) {

@@ -9,16 +9,19 @@ import (
 	"time"
 )
 
-func MysqlScan(info *common.HostInfo) {
+func MysqlScan(info *common.HostInfo) (tmperr error) {
 	for _, user := range common.Userdict["mysql"] {
 		for _, pass := range common.Passwords {
 			pass = strings.Replace(pass, "{user}", user, -1)
 			flag, err := MysqlConn(info, user, pass)
 			if flag == true && err == nil {
-				return
+				return err
+			} else {
+				tmperr = err
 			}
 		}
 	}
+	return tmperr
 }
 
 func MysqlConn(info *common.HostInfo, user string, pass string) (flag bool, err error) {

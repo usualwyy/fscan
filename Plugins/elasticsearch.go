@@ -12,8 +12,9 @@ import (
 	"github.com/shadow1ng/fscan/common"
 )
 
-func elasticsearchScan(info *common.HostInfo) {
-	geturl2(info)
+func elasticsearchScan(info *common.HostInfo) error {
+	_, err := geturl2(info)
+	return err
 }
 
 func geturl2(info *common.HostInfo) (flag bool, err error) {

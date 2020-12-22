@@ -15,7 +15,7 @@ var Pocs embed.FS
 func WebScan(info *common.HostInfo) {
 	info.PocInfo.Target = info.Url
 	err := Execute(info.PocInfo)
-	if err != nil {
+	if err != nil && info.Debug == false {
 		fmt.Println(info.Url, err)
 	}
 }

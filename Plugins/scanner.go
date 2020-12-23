@@ -53,7 +53,7 @@ func AddScan(scantype string, info common.HostInfo, ch chan struct{}, wg *sync.W
 	wg.Add(1)
 	go func() {
 		err, _ := ScanFunc(PluginList, scantype, &info)
-		if info.Debug == false {
+		if info.Debug {
 			tmperr := err[0].Interface()
 			if tmperr != nil {
 				tmperr1 := err[0].Interface().(error)

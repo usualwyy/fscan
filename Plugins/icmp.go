@@ -18,30 +18,38 @@ var AliveHosts []string
 var SysInfo = GetSys()
 
 type SystemInfo struct {
-	OS          string
-	ARCH        string
-	HostName    string
-	Groupid     string
-	Userid      string
-	Username    string
-	UserHomeDir string
+	OS string
+	//ARCH        string
+	HostName string
+	Groupid  string
+	Userid   string
+	Username string
+	//UserHomeDir string
 }
 
 func GetSys() SystemInfo {
 	var sysinfo SystemInfo
 
 	sysinfo.OS = runtime.GOOS
-	sysinfo.ARCH = runtime.GOARCH
+	//sysinfo.ARCH = runtime.GOARCH
 	name, err := os.Hostname()
 	if err == nil {
 		sysinfo.HostName = name
 	}
 
 	u, err := user.Current()
-	sysinfo.Groupid = u.Gid
-	sysinfo.Userid = u.Uid
-	sysinfo.Username = u.Username
-	sysinfo.UserHomeDir = u.HomeDir
+	//fmt.Println(err,u)
+	if err == nil {
+		sysinfo.Groupid = u.Gid
+		sysinfo.Userid = u.Uid
+		sysinfo.Username = u.Username
+		//sysinfo.UserHomeDir = u.HomeDir
+	} else {
+		sysinfo.Groupid = "1"
+		sysinfo.Userid = "1"
+		sysinfo.Username = name
+		//sysinfo.UserHomeDir = u.HomeDir
+	}
 
 	return sysinfo
 }

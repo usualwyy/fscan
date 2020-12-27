@@ -1,33 +1,29 @@
 package Plugins
 
 import (
-	"context"
 	"fmt"
 	"github.com/shadow1ng/fscan/common"
 	"github.com/stacktitan/smb/smb"
 	"strings"
-	"sync"
 	"time"
 )
 
-func SmbScan(info *common.HostInfo, ch chan int, wg *sync.WaitGroup) {
-
-Loop:
+func SmbScan(info *common.HostInfo) (tmperr error) {
 	for _, user := range common.Userdict["smb"] {
 		for _, pass := range common.Passwords {
-			pass = strings.Replace(pass, "{user}", string(user), -1)
+			pass = strings.Replace(pass, "{user}", user, -1)
 			flag, err := doWithTimeOut(info, user, pass)
 			if flag == true && err == nil {
-				break Loop
+				return err
+			} else {
+				tmperr = err
 			}
 		}
 	}
-	wg.Done()
-	<-ch
-
+	return tmperr
 }
 
-func SmblConn(info *common.HostInfo, user string, pass string, Domain string) (flag bool, err error) {
+func SmblConn(info *common.HostInfo, user string, pass string, Domain string, signal chan struct{}) (flag bool, err error) {
 	flag = false
 	Host, Port, Username, Password := info.Host, common.PORTList["smb"], user, pass
 	options := smb.Options{
@@ -41,7 +37,7 @@ func SmblConn(info *common.HostInfo, user string, pass string, Domain string) (f
 
 	session, err := smb.NewSession(options, false)
 	if err == nil {
-		defer session.Close()
+		session.Close()
 		if session.IsAuthenticated {
 			var result string
 			if Domain != "" {
@@ -49,27 +45,24 @@ func SmblConn(info *common.HostInfo, user string, pass string, Domain string) (f
 			} else {
 				result = fmt.Sprintf("SMB:%v:%v:%v %v", Host, Port, Username, Password)
 			}
-
 			common.LogSuccess(result)
 			flag = true
 		}
 	}
+	signal <- struct{}{}
 	return flag, err
 }
 
 func doWithTimeOut(info *common.HostInfo, user string, pass string) (flag bool, err error) {
-	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(info.Timeout)*time.Second)
-	defer cancel()
-	signal := make(chan int, 1)
+	signal := make(chan struct{})
 	go func() {
-		flag, err = SmblConn(info, user, pass, info.Domain)
-		signal <- 1
+		flag, err = SmblConn(info, user, pass, info.Domain, signal)
 	}()
-
 	select {
 	case <-signal:
 		return flag, err
-	case <-ctx.Done():
+	case <-time.After(time.Duration(info.Timeout) * time.Second):
 		return false, err
 	}
+
 }

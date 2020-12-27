@@ -6,23 +6,22 @@ import (
 	_ "github.com/denisenkom/go-mssqldb"
 	"github.com/shadow1ng/fscan/common"
 	"strings"
-	"sync"
 	"time"
 )
 
-func MssqlScan(info *common.HostInfo, ch chan int, wg *sync.WaitGroup) {
-Loop:
+func MssqlScan(info *common.HostInfo) (tmperr error) {
 	for _, user := range common.Userdict["mssql"] {
 		for _, pass := range common.Passwords {
 			pass = strings.Replace(pass, "{user}", user, -1)
 			flag, err := MssqlConn(info, user, pass)
 			if flag == true && err == nil {
-				break Loop
+				return err
+			} else {
+				tmperr = err
 			}
 		}
 	}
-	wg.Done()
-	<-ch
+	return tmperr
 }
 
 func MssqlConn(info *common.HostInfo, user string, pass string) (flag bool, err error) {
@@ -32,10 +31,12 @@ func MssqlConn(info *common.HostInfo, user string, pass string) (flag bool, err 
 	db, err := sql.Open("mssql", dataSourceName)
 	if err == nil {
 		db.SetConnMaxLifetime(time.Duration(info.Timeout) * time.Second)
+		db.SetConnMaxIdleTime(time.Duration(info.Timeout) * time.Second)
+		db.SetMaxIdleConns(0)
 		defer db.Close()
 		err = db.Ping()
 		if err == nil {
-			result := fmt.Sprintf("mssql:%v:%v:%v %v", Host, Port, Username, Password)
+			result := fmt.Sprintf("[+] mssql:%v:%v:%v %v", Host, Port, Username, Password)
 			common.LogSuccess(result)
 			flag = true
 		}

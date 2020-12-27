@@ -2,27 +2,25 @@ package Plugins
 
 import (
 	"fmt"
-	"strings"
-	"sync"
-	"time"
-
 	"github.com/jlaffaye/ftp"
 	"github.com/shadow1ng/fscan/common"
+	"strings"
+	"time"
 )
 
-func FtpScan(info *common.HostInfo, ch chan int, wg *sync.WaitGroup) {
-Loop:
+func FtpScan(info *common.HostInfo) (tmperr error) {
 	for _, user := range common.Userdict["ftp"] {
 		for _, pass := range common.Passwords {
-			pass = strings.Replace(pass, "{user}", string(user), -1)
+			pass = strings.Replace(pass, "{user}", user, -1)
 			flag, err := FtpConn(info, user, pass)
 			if flag == true && err == nil {
-				break Loop
+				return err
+			} else {
+				tmperr = err
 			}
 		}
 	}
-	wg.Done()
-	<-ch
+	return tmperr
 }
 
 func FtpConn(info *common.HostInfo, user string, pass string) (flag bool, err error) {

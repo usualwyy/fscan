@@ -6,23 +6,22 @@ import (
 	"golang.org/x/crypto/ssh"
 	"net"
 	"strings"
-	"sync"
 	"time"
 )
 
-func SshScan(info *common.HostInfo, ch chan int, wg *sync.WaitGroup) {
-Loop:
+func SshScan(info *common.HostInfo) (tmperr error) {
 	for _, user := range common.Userdict["ssh"] {
 		for _, pass := range common.Passwords {
 			pass = strings.Replace(pass, "{user}", user, -1)
 			flag, err := SshConn(info, user, pass)
 			if flag == true && err == nil {
-				break Loop
+				return err
+			} else {
+				tmperr = err
 			}
 		}
 	}
-	wg.Done()
-	<-ch
+	return tmperr
 }
 
 func SshConn(info *common.HostInfo, user string, pass string) (flag bool, err error) {
@@ -51,7 +50,7 @@ func SshConn(info *common.HostInfo, user string, pass string) (flag bool, err er
 				result := fmt.Sprintf("SSH:%v:%v:%v %v \n %v", Host, Port, Username, Password, string(combo))
 				common.LogSuccess(result)
 			} else {
-				result := fmt.Sprintf("SSH:%v:%v:%v %v", Host, Port, Username, Password)
+				result := fmt.Sprintf("[+] SSH:%v:%v:%v %v", Host, Port, Username, Password)
 				common.LogSuccess(result)
 			}
 		}

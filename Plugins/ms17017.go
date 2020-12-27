@@ -3,16 +3,11 @@ package Plugins
 import (
 	"encoding/binary"
 	"encoding/hex"
-	"sync"
-
-	//"flag"
+	"errors"
 	"fmt"
+	"github.com/shadow1ng/fscan/common"
 	"net"
 	"strings"
-
-	"github.com/shadow1ng/fscan/common"
-
-	//"sync"
 	"time"
 )
 
@@ -24,47 +19,55 @@ var (
 	trans2SessionSetupRequest, _ = hex.DecodeString("0000004eff534d4232000000001807c00000000000000000000000000008fffe000841000f0c0000000100000000000000a6d9a40000000c00420000004e0001000e000d0000000000000000000000000000")
 )
 
-func MS17010(info *common.HostInfo, ch chan int, wg *sync.WaitGroup) {
-	MS17010Scan(info)
-	wg.Done()
-	<-ch
+func MS17010(info *common.HostInfo) error {
+	err := MS17010Scan(info)
+	return err
 }
 
-func MS17010Scan(info *common.HostInfo) {
+func MS17010Scan(info *common.HostInfo) error {
 
 	ip := info.Host
 	// connecting to a host in LAN if reachable should be very quick
 	conn, err := net.DialTimeout("tcp", ip+":445", time.Duration(info.Timeout)*time.Second)
 	if err != nil {
 		//fmt.Printf("failed to connect to %s\n", ip)
-		return
+		return err
 	}
 	defer conn.Close()
-
-	conn.SetDeadline(time.Now().Add(time.Duration(info.Timeout) * time.Second))
-	conn.Write(negotiateProtocolRequest)
+	err = conn.SetDeadline(time.Now().Add(time.Duration(info.Timeout) * time.Second))
+	if err != nil {
+		//fmt.Printf("failed to connect to %s\n", ip)
+		return err
+	}
+	_, err = conn.Write(negotiateProtocolRequest)
+	if err != nil {
+		return err
+	}
 	reply := make([]byte, 1024)
 	// let alone half packet
 	if n, err := conn.Read(reply); err != nil || n < 36 {
-		return
+		return err
 	}
 
 	if binary.LittleEndian.Uint32(reply[9:13]) != 0 {
 		// status != 0
-		return
+		return err
 	}
 
-	conn.Write(sessionSetupRequest)
-
+	_, err = conn.Write(sessionSetupRequest)
+	if err != nil {
+		return err
+	}
 	n, err := conn.Read(reply)
 	if err != nil || n < 36 {
-		return
+		return err
 	}
 
 	if binary.LittleEndian.Uint32(reply[9:13]) != 0 {
 		// status != 0
 		//fmt.Printf("can't determine whether %s is vulnerable or not\n", ip)
-		return
+		var Err = errors.New("can't determine whether target is vulnerable or not")
+		return Err
 	}
 
 	// extract OS info
@@ -91,10 +94,12 @@ func MS17010Scan(info *common.HostInfo) {
 	treeConnectRequest[32] = userID[0]
 	treeConnectRequest[33] = userID[1]
 	// TODO change the ip in tree path though it doesn't matter
-	conn.Write(treeConnectRequest)
-
+	_, err = conn.Write(treeConnectRequest)
+	if err != nil {
+		return err
+	}
 	if n, err := conn.Read(reply); err != nil || n < 36 {
-		return
+		return err
 	}
 
 	treeID := reply[28:30]
@@ -103,16 +108,19 @@ func MS17010Scan(info *common.HostInfo) {
 	transNamedPipeRequest[32] = userID[0]
 	transNamedPipeRequest[33] = userID[1]
 
-	conn.Write(transNamedPipeRequest)
+	_, err = conn.Write(transNamedPipeRequest)
+	if err != nil {
+		return err
+	}
 	if n, err := conn.Read(reply); err != nil || n < 36 {
-		return
+		return err
 	}
 
 	if reply[9] == 0x05 && reply[10] == 0x02 && reply[11] == 0x00 && reply[12] == 0xc0 {
 		//fmt.Printf("%s\tMS17-010\t(%s)\n", ip, os)
 		//if runtime.GOOS=="windows" {fmt.Printf("%s\tMS17-010\t(%s)\n", ip, os)
 		//} else{fmt.Printf("\033[33m%s\tMS17-010\t(%s)\033[0m\n", ip, os)}
-		result := fmt.Sprintf("%s\tMS17-010\t(%s)", ip, os)
+		result := fmt.Sprintf("[+] %s\tMS17-010\t(%s)", ip, os)
 		common.LogSuccess(result)
 		// detect present of DOUBLEPULSAR SMB implant
 		trans2SessionSetupRequest[28] = treeID[0]
@@ -120,10 +128,12 @@ func MS17010Scan(info *common.HostInfo) {
 		trans2SessionSetupRequest[32] = userID[0]
 		trans2SessionSetupRequest[33] = userID[1]
 
-		conn.Write(trans2SessionSetupRequest)
-
+		_, err = conn.Write(trans2SessionSetupRequest)
+		if err != nil {
+			return err
+		}
 		if n, err := conn.Read(reply); err != nil || n < 36 {
-			return
+			return err
 		}
 
 		if reply[34] == 0x51 {
@@ -136,5 +146,6 @@ func MS17010Scan(info *common.HostInfo) {
 		result := fmt.Sprintf("%s  (%s)", ip, os)
 		common.LogSuccess(result)
 	}
+	return err
 
 }

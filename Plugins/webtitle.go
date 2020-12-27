@@ -6,34 +6,46 @@ import (
 	"github.com/shadow1ng/fscan/WebScan"
 	"github.com/shadow1ng/fscan/common"
 	"io/ioutil"
+	"net"
 	"net/http"
 	"regexp"
-	"sync"
+	"strings"
 	"time"
 )
 
-func WebTitle(info *common.HostInfo, ch chan int, wg *sync.WaitGroup) (err error, result string) {
-	info.Url = fmt.Sprintf("http://%s:%s", info.Host, info.Ports)
-	err, result = geturl(info)
-	if err == nil {
-		WebScan.WebScan(info)
+func WebTitle(info *common.HostInfo) (err error, result string) {
+	if info.Ports == "80" {
+		info.Url = fmt.Sprintf("http://%s", info.Host)
+	} else if info.Ports == "443" {
+		info.Url = fmt.Sprintf("https://%s", info.Host)
+	} else {
+		info.Url = fmt.Sprintf("http://%s:%s", info.Host, info.Ports)
 	}
 
-	info.Url = fmt.Sprintf("https://%s:%s", info.Host, info.Ports)
 	err, result = geturl(info)
-	if err == nil {
-		WebScan.WebScan(info)
+	if info.IsWebCan || err != nil {
+		return
 	}
 
-	wg.Done()
-	<-ch
+	if result == "https" {
+		err, result = geturl(info)
+		if err == nil {
+			WebScan.WebScan(info)
+		}
+	} else {
+		WebScan.WebScan(info)
+	}
 	return err, result
 }
 
 func geturl(info *common.HostInfo) (err error, result string) {
 	url := info.Url
 	tr := &http.Transport{
-		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+		TLSClientConfig:   &tls.Config{InsecureSkipVerify: true},
+		DisableKeepAlives: false,
+		DialContext: (&net.Dialer{
+			Timeout: time.Duration(info.WebTimeout) * time.Second,
+		}).DialContext,
 	}
 	var client = &http.Client{Timeout: time.Duration(info.WebTimeout) * time.Second, Transport: tr}
 	res, err := http.NewRequest("GET", url, nil)
@@ -52,14 +64,18 @@ func geturl(info *common.HostInfo) (err error, result string) {
 			find := re.FindAllStringSubmatch(string(body), -1)
 			if len(find) > 0 {
 				title = find[0][1]
+				if len(title) > 100 {
+					title = title[:100]
+				}
 			} else {
 				title = "None"
 			}
-			if len(title) > 50 {
-				title = title[:50]
-			}
-			result = fmt.Sprintf("WebTitle:%v %v %v", url, resp.StatusCode, title)
+			result = fmt.Sprintf("WebTitle:%-25v %-3v %v", url, resp.StatusCode, title)
 			common.LogSuccess(result)
+			if resp.StatusCode == 400 && info.Url[:5] != "https" {
+				info.Url = strings.Replace(info.Url, "http://", "https://", 1)
+				return err, "https"
+			}
 			return err, result
 		}
 		return err, ""

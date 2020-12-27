@@ -6,12 +6,12 @@ import (
 
 func Banner() {
 	banner := `
-
    ___                              _    
-  / _ \     ___  ___ _ __ __ _  ___| | __
+  / _ \     ___  ___ _ __ __ _  ___| | __ 
  / /_\/____/ __|/ __| '__/ _` + "`" + ` |/ __| |/ /
-/ /_\\_____\__ \ (__| | | (_| | (__|   <
-\____/     |___/\___|_|  \__,_|\___|_|\_\
+/ /_\\_____\__ \ (__| | | (_| | (__|   <    
+\____/     |___/\___|_|  \__,_|\___|_|\_\   
+                     fscan version: 1.4.2
 `
 	print(banner)
 }
@@ -34,9 +34,15 @@ func Flag(Info *HostInfo) {
 	flag.StringVar(&Info.Passfile, "pwdf", "", "password file")
 	flag.StringVar(&Info.Outputfile, "o", "result.txt", "Outputfile")
 	flag.Int64Var(&Info.Timeout, "time", 3, "Set timeout")
+	flag.BoolVar(&Info.Debug, "debug", false, "debug mode will print more error info")
 	flag.Int64Var(&Info.WebTimeout, "wt", 3, "Set web timeout")
 	flag.StringVar(&Info.Scantype, "m", "all", "Select scan type ,as: -m ssh")
 	flag.StringVar(&Info.RedisFile, "rf", "", "redis file to write sshkey file (as: -rf id_rsa.pub) ")
 	flag.StringVar(&Info.RedisShell, "rs", "", "redis shell to write cron file (as: -rs 192.168.1.1:6666) ")
+
+	flag.BoolVar(&Info.IsWebCan, "nopoc", false, "not to scan web vul")
+	flag.StringVar(&Info.PocInfo.PocName, "pocname", "", "use the pocs these contain pocname, -pocname weblogic")
+	flag.StringVar(&Info.PocInfo.Proxy, "proxy", "", "set poc proxy, -proxy http://127.0.0.1:8080")
+	flag.IntVar(&Info.PocInfo.Num, "Num", 20, "poc rate")
 	flag.Parse()
 }

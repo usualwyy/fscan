@@ -2,15 +2,13 @@ package Plugins
 
 import (
 	"fmt"
+	"github.com/shadow1ng/fscan/common"
 	"net"
 	"strings"
-	"sync"
 	"time"
-
-	"github.com/shadow1ng/fscan/common"
 )
 
-func MemcachedScan(info *common.HostInfo, ch chan int, wg *sync.WaitGroup) (err error, result string) {
+func MemcachedScan(info *common.HostInfo) (err error, result string) {
 	realhost := fmt.Sprintf("%s:%d", info.Host, common.PORTList["mem"])
 	client, err := net.DialTimeout("tcp", realhost, time.Duration(info.Timeout)*time.Second)
 	if err == nil {
@@ -26,7 +24,5 @@ func MemcachedScan(info *common.HostInfo, ch chan int, wg *sync.WaitGroup) (err 
 			}
 		}
 	}
-	wg.Done()
-	<-ch
 	return err, result
 }
